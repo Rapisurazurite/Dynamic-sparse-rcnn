@@ -1,0 +1,15 @@
+DATASET: CocoDataset
+BASE_ROOT : "/home/lazurite/clone/Sparse_rcnn/datasets/coco"
+INPUT:
+  FORMAT: "RGB"
+  MAX_SIZE_TEST : 1333
+  MAX_SIZE_TRAIN : 1333
+  MIN_SIZE_TEST : 800 #768
+  MIN_SIZE_TRAIN : [480, 512, 544, 576, 608, 640, 672, 704, 736, 768, 800]
+  MIN_SIZE_TRAIN_SAMPLING : "choice"
+NORMALIZATION:
+  PIXEL_MEAN: [123.675, 116.280, 103.530]
+  PIXEL_STD: [58.395, 57.120, 57.375]
+DATASETS:
+  TRAIN: ["coco_2017_train",]
+  TEST:  ["coco_2017_val",]

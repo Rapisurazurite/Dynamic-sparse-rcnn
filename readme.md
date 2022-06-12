@@ -16,7 +16,7 @@ There are still some bugs in the implementation that have not been fixed, making
 - [x] Dynamic Proposal Generation
 - [ ] MAE
 - [ ] Voc dataset support 
-- [ ] Support for multiple GPUs
+- [x] Support for multiple GPUs
 
 ## Example
 

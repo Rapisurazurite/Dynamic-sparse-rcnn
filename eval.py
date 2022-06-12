@@ -88,7 +88,7 @@ def main():
     logger.info('**********************Start logging**********************')
     log_config_to_file(cfg, logger=logger)
     # ------------ Create dataloader ------------
-    test_loader = build_dataloader(cfg,
+    test_loader, _ = build_dataloader(cfg,
                                    transforms=build_coco_transforms(cfg, mode="val"),
                                    batch_size=cfg.SOLVER.IMS_PER_BATCH,
                                    dist=False,

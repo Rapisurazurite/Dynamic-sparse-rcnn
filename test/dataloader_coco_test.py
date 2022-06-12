@@ -9,7 +9,7 @@ coco_config = "sparse_rcnn/configs/coco.yaml"
 cfg_from_yaml_file(coco_config, cfg)
 
 transforms = build_coco_transforms(cfg, mode="train")
-dataloader = build_dataloader(cfg, transforms, batch_size=2, dist=False, workers=0, mode="train")
+dataloader, _ = build_dataloader(cfg, transforms, batch_size=2, dist=False, workers=0, mode="train")
 
 for i, data in enumerate(dataloader):
     # print(data)

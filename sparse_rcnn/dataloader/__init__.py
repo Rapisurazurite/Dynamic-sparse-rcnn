@@ -15,22 +15,28 @@ def build_dataloader(dataset_cfg, transforms, batch_size, dist, workers=4, pin_m
         raise ValueError("Dataset {} not supported".format(dataset_cfg.DATASET))
 
     dataset = __all__[dataset_cfg.DATASET](dataset_cfg, mode, transforms)
-
+    sampler = None
     if mode == "train":
         if dist:
             # sampler = DistributedSampler(dataset, shuffle=(mode == "train"))
             sampler = DistributedGroupSampler(dataset, samples_per_gpu=batch_size)
+            dataloader = DataLoader(
+                dataset,
+                pin_memory=pin_memory,
+                batch_size=batch_size,
+                num_workers=workers,
+                collate_fn=Collate(dataset_cfg),
+                sampler=sampler)
         else:
             # Note: Use this sampler to reduce memory usage.
             sampler = AspectRatioBasedSampler(dataset, batch_size=batch_size, drop_last=True)
-
-        dataloader = DataLoader(
-            dataset,
-            pin_memory=pin_memory,
-            num_workers=workers,
-            collate_fn=Collate(dataset_cfg),
-            batch_sampler=sampler,
-        )
+            dataloader = DataLoader(
+                dataset,
+                pin_memory=pin_memory,
+                num_workers=workers,
+                collate_fn=Collate(dataset_cfg),
+                batch_sampler=sampler,
+            )
     elif mode == "val":
         if dist:
             raise ValueError("DDP currently does not support validation")
@@ -46,4 +52,4 @@ def build_dataloader(dataset_cfg, transforms, batch_size, dist, workers=4, pin_m
             )
     else:
         raise ValueError("Mode {} not supported".format(mode))
-    return dataloader
+    return dataloader, sampler

@@ -231,14 +231,14 @@ def main():
     logger.info('**********************Start logging**********************')
     log_config_to_file(cfg, logger=logger)
     # ------------ Create dataloader ------------
-    train_dataloader = build_dataloader(cfg,
+    train_dataloader, sampler = build_dataloader(cfg,
                                         transforms=build_coco_transforms(cfg, mode="train"),
                                         batch_size=cfg.SOLVER.IMS_PER_BATCH,
                                         dist=False,
                                         workers=4,
                                         mode="train")
 
-    test_dataloader = build_dataloader(cfg,
+    test_dataloader, _ = build_dataloader(cfg,
                                    transforms=build_coco_transforms(cfg, mode="val"),
                                    batch_size=cfg.SOLVER.IMS_PER_BATCH,
                                    dist=False,

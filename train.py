@@ -53,13 +53,14 @@ def parse_args():
     return args, cfg
 
 
-def train_model(model, criterion, optimizer, evaluator, train_loader, test_loader, scheduler, start_epoch, total_epochs,
+def train_model(model, criterion, optimizer, evaluator, train_loader, train_sampler, test_loader, scheduler, start_epoch, total_epochs,
                 device, logger, ckpt_save_dir, args, cfg, extern_callback=None):
     scaler = GradScaler() if args.fp16_mix else None
     model.train()
     with tqdm.trange(start_epoch, total_epochs, desc="epochs", ncols=120) as ebar:
         for cur_epoch in ebar:
-
+            if train_sampler is not None:
+                train_sampler.set_epoch(cur_epoch)
             train_one_epoch(model, criterion, optimizer, train_loader, scheduler, cur_epoch, device, logger, args, cfg,
                             ebar, scaler)
             if cfg.LOCAL_RANK == 0:
@@ -202,8 +203,8 @@ def train_one_epoch(model, criterion, optimizer, train_loader, scheduler, cur_ep
                 logger.info(
                     f"\nEpoch: [{cur_epoch}][{cur_iter}/{total_it_each_epoch}], \n lr:{e_disp['lr']}, loss: {t_disp['l']}, loss_ce: {t_disp['l_ce']}, loss_giou: {t_disp['l_giou']}, loss_bbox: {t_disp['l_bbox']}")
                 # TODO: debug
-                proposaL_box = model.dynamic_proposal_generator.init_proposal_boxes.weight.data.cpu().numpy()
-                logger.info(f"proposaL_box: {proposaL_box}")
+                # proposaL_box = model.dynamic_proposal_generator.init_proposal_boxes.weight.data.cpu().numpy()
+                # logger.info(f"proposaL_box: {proposaL_box}")
 
 
     # --------------- after train one epoch ---------------
@@ -240,17 +241,17 @@ def main():
     log_config_to_file(cfg, logger=logger)
 
     # ------------ Create dataloader ------------
-    train_dataloader = build_dataloader(cfg,
+    train_dataloader, sampler = build_dataloader(cfg,
                                         transforms=build_coco_transforms(cfg, mode="train"),
                                         batch_size=cfg.SOLVER.IMS_PER_BATCH,
                                         dist=dist_train,
                                         workers=2,
                                         pin_memory=True,
                                         mode="train")
-    test_loader = build_dataloader(cfg,
+    test_loader, _ = build_dataloader(cfg,
                                    transforms=build_coco_transforms(cfg, mode="val"),
                                    batch_size=cfg.SOLVER.IMS_PER_BATCH,
-                                   dist=dist_train,
+                                   dist=False,
                                    workers=2,
                                    pin_memory=False,
                                    mode="val")
@@ -294,6 +295,7 @@ def main():
                 optimizer,
                 evaluator=evaluator,
                 train_loader=train_dataloader,
+                train_sampler = sampler,
                 test_loader=test_loader,
                 scheduler=lr_scheduler,
                 start_epoch=start_epoch,

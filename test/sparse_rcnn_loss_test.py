@@ -18,7 +18,7 @@ cfg_from_yaml_file(model_config, cfg)
 #                          [800, 1216, 800, 1216]])
 
 val_transform = build_coco_transforms(cfg, mode="val")
-dataloader = build_dataloader(cfg, val_transform, batch_size=2, dist=False, workers=0, mode="val")
+dataloader, _ = build_dataloader(cfg, val_transform, batch_size=2, dist=False, workers=0, mode="val")
 model = SparseRCNN(cfg, num_classes=81, backbone='resnet18')
 model.train()
 criterion = SparseRcnnLoss(cfg)
